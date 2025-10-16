@@ -1,10 +1,14 @@
 # Personal-projects
 
-Waves on sphere
+## Waves on sphere
+
+I made this fun little project that combined the knowledge of spherical coordinates with a little trigonometry. Unlike the last project, it didn't require conversion of coordinate systems, but rather basic knowledge of how the sine function works in Python. Here you can see waves that are represented in both rectangular coordinates, and then just converted to be on top of the sphere. I had to test things out and figure out new coordinate basis vectors; it took me about 3 hours, but in the end it was totally worth it. I also added this little 3d effect that works by using the sum of x and y coordinates as a radius of a given point in space, multiplied by some constant. Overall, if you check the source code, you will find a lot of unclear actions I didn't comment on yet, along with generally unstructured lines that could use function writing. I will improve these aspects of my code in the future, since I plan on using it further, maybe applying physics simulations. Other than that, I want to finally start out making some code on C++ graphics libraries, since you can make code that is even more lightweight with some clever data structures for large projects. Everything was written in Python with pygame; you would have to install this library first. 
 
 <img width="366" height="180" alt="image" src="https://github.com/user-attachments/assets/8d0c7a10-4827-4d0d-90d9-9243720694d4" />
 
 
-Rotating cuboid
+## Rotating cuboid
+
+Here is my old project from a year ago. I combined my knowledge of the pygame library of Python with the knowledge I acquired in Calculus 3 class at City College. The project turned out to be very easy to implement, especially with fresh notes about projection, orthogonality of vectors, and functions of rotation, along with the creation of new coordinate systems using non-trivial basis vectors. It was also generally fun to see how such a hard concept as 3d graphics can have a fairly easy implementation with careful planning. All that said, the project has its own flaws, one of which is scalability. Here, I hardcoded the points in space with the space itself, ignoring the possibility of adding more on top of them. Sure, I made them behave according to their coordinate systems, but it was only possible by directly creating these systems. The other difference from my initial vision is that this kind of 3D graphics is called isometric, while adding perspective will require linear algebra. In fact, adding a completely new library of linear algebra implementation will solve both scalability and the type of 3D graphics I aimed to use here. In conclusion, to make this code, it took me barely 3 days, and it was very fun. I would like to make the reworked version on lower-level languages like C or Java once I learn how their graphics libraries work. Please also add your suggestions on how I could make things clearer or better optimized, for example, I didn't implement the constant FPS, as you can see from the video, I am sure there is way more ground for improvement. But since then, I will post more of my past and new work here. To run it you would have to first install the pygame library.
 
 <img width="367" height="255" alt="image" src="https://github.com/user-attachments/assets/602df66d-ca12-4a6d-bfdd-4e3fd832563c" />
