@@ -5,7 +5,7 @@
 I made this fun little project that combined the knowledge of spherical coordinates with a little trigonometry. Unlike the last project, it didn't require conversion of coordinate systems, but rather basic knowledge of how the sine function works in Python. Here you can see waves that are represented in both rectangular coordinates, and then just converted to be on top of the sphere. I had to test things out and figure out new coordinate basis vectors; it took me about 3 hours, but in the end it was totally worth it. I also added this little 3d effect that works by using the sum of x and y coordinates as a radius of a given point in space, multiplied by some constant. Overall, if you check the source code, you will find a lot of unclear actions I didn't comment on yet, along with generally unstructured lines that could use function writing. I will improve these aspects of my code in the future, since I plan on using it further, maybe applying physics simulations. Other than that, I want to finally start out making some code on C++ graphics libraries, since you can make code that is even more lightweight with some clever data structures for large projects. Everything was written in Python with pygame; you would have to install this library first. 
 
 <img width="366" height="180" alt="image" src="https://github.com/user-attachments/assets/8d0c7a10-4827-4d0d-90d9-9243720694d4" />
-[gif][gif2.gif]
+![Alt text](gif2.gif)
 
 
 ## Rotating cuboid
