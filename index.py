@@ -1,5 +1,6 @@
 import pygame
 import math
+from math import sqrt as sqrt
 import time
 # Initialize Pygame
 pygame.init()
@@ -14,6 +15,15 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 
 
+
+dot_radius = 5
+
+maximum_vertices = 20000
+#2000 for my pc is most optimal
+
+
+magnification = 1
+
 #unit vectors
 #i = (1, 0)
 #j = (0, 1)
@@ -22,11 +32,43 @@ ni = 0
 nj = 0
 nk = 0
 
+origin_x = 0
+origin_y = 0
+origin_z = 0
+
+
 def draw_line(x, y, z, x1, y1, z1, color = white):
     pygame.draw.line(screen, color, (x+z*k[0], y+z*k[1]), (x1+z1*k[0], y1+z1*k[1]), 2)
 
-def draw_point(x, y, z):
-    pygame.draw.circle(screen, white, (x+z*k[0], y+z*k[1]), dot_radius)
+
+def draw_coordinate_plane():
+    initial_point = 50
+    draw_line(initial_point+0, initial_point+100, initial_point+0,initial_point, initial_point, initial_point, pygame.Color('red'))
+    draw_line(initial_point+0, initial_point+0, initial_point+100,initial_point, initial_point, initial_point, pygame.Color('green'))
+    draw_line(initial_point+100, initial_point+0, initial_point+0,initial_point, initial_point, initial_point, pygame.Color('blue'))
+
+def draw_point(x, y, z, radius = dot_radius, color = white):
+    pygame.draw.circle(screen, color, (x+z*k[0], y+z*k[1]), radius)
+
+def threeD_converter(model):
+    models = ["../Human skeleton_ascii.ply", "../Lone Sailor Memorial_ascii.ply", "../Brain_Model_no_normals.ply"]
+    line_count = 0
+    counting_lines = False
+    vertex_count = 0
+    vertext_coordinates = []
+    with open(models[model-1], "r") as file:
+        for line in file:
+            if "element vertex" in line.strip():
+                vertex_count = int(line.strip().split("element vertex ")[1])
+
+            if counting_lines and line_count <= vertex_count:
+                line_count += 1
+                if line_count % (vertex_count//maximum_vertices) == 0:
+                    vertext_coordinates.append([float(v) / 2 for v in line.strip().split()])
+            if "end_header" in line.strip():
+                counting_lines = True
+    return vertext_coordinates
+           
 
 def cross_mult(x, y, z, x1, y1, z1, x_i, y_i, z_i):
     ni = y*z1-z*y1
@@ -44,7 +86,6 @@ def cross_mult(x, y, z, x1, y1, z1, x_i, y_i, z_i):
     return (x_i+ni, y_i+nj, z_i+nk)
 
 # Create a dot
-dot_radius = 5
 dot_x = 150
 dot_y = 150
 dot_x2 = 150
@@ -63,18 +104,109 @@ theta1 = 0
 
 running = True
 theta = 0
+
+initial_x = 100
+initial_y = 300
+initial_z = 100
+
+
+
+
+
+counter = 0
+
+points = threeD_converter(2)
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-    # Clear screen
-    screen.fill(black)
+        
+   
  
-    theta1 += 0.01
-    theta += 0.001
+    
+    
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP]:
+        magnification += 0.01
+    if keys[pygame.K_DOWN]:
+        magnification -= 0.01
+    if keys[pygame.K_LEFT]:
+        initial_x -= 10
+    if keys[pygame.K_RIGHT]:
+        initial_x += 10
+    if keys[pygame.K_z]:
+        initial_y -= 10
+    if keys[pygame.K_x]:
+        initial_y += 10
+    if keys[pygame.K_1]:
+        points = threeD_converter(1)
+    if keys[pygame.K_2]:
+        points = threeD_converter(2)
+    if keys[pygame.K_3]:
+        points = threeD_converter(3)
+    
+    
+     # Clear screen
+    screen.fill(black)
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+
+    theta1 = 0.01
+    
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+
+    draw_coordinate_plane()
+    theta1 = 0.01*mouse_x + screen_width//2
+    theta2 = -0.01*mouse_y+ screen_height//2
+    theta3 = 0
+
+    previous_mouse_x = 0
+    previous_mouse_y = 0
+
+    previous_points = []
+    for x, y, z in points:
+        
+        counter += 0.05
+
+        
+       
+    
+        x0, y0, z0 = x, y, z
+
+        x = initial_x + (x0*math.cos(theta3)*math.cos(theta1) +
+                        y0*(math.cos(theta3)*math.sin(theta1)*math.sin(theta2) - math.sin(theta3)*math.cos(theta2)) +
+                        z0*(math.cos(theta3)*math.sin(theta1)*math.cos(theta2) + math.sin(theta3)*math.sin(theta2))) * magnification
+
+        y = initial_y + (x0*math.sin(theta3)*math.cos(theta1) +
+                        y0*(math.sin(theta3)*math.sin(theta1)*math.sin(theta2) + math.cos(theta3)*math.cos(theta2)) +
+                        z0*(math.sin(theta3)*math.sin(theta1)*math.cos(theta2) - math.cos(theta3)*math.sin(theta2))) * magnification
+
+        z = initial_z + (x0*(-math.sin(theta1)) +
+                        y0*(math.cos(theta1)*math.sin(theta2)) +
+                        z0*(math.cos(theta1)*math.cos(theta2))) * magnification
+       
 
 
+       
+
+        draw_point(x, y, z, 1, white)
+
+        previous_points = [x, y, z]
+    previous_mouse_x = mouse_x
+    previous_mouse_y = mouse_y
+
+
+
+
+
+
+
+    # Update displacy
+    pygame.display.flip()
+
+
+'''
     x1 = 100*math.cos(theta)
     z1 = 100*math.sin(theta)
     x2 = 100*math.cos(theta+math.pi)
@@ -151,7 +283,17 @@ while running:
 
     # Update displacy
     pygame.display.flip()
+'''
     
 
 # Quit Pygame
 pygame.quit()
+
+
+'''
+Plans include:
+
+    - 3D model conversion to graphics
+    - Adding perspective matrix
+
+'''
