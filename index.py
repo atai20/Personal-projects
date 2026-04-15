@@ -1,14 +1,17 @@
 import pygame
 import math
+import time
+import numpy as np
 from math import sqrt as sqrt
 import time
+from pygame import gfxdraw
 # Initialize Pygame
 pygame.init()
 
 # Set screen dimensions
 screen_width = 800
 screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
+screen = pygame.display.set_mode((screen_width, screen_height), pygame.SCALED | pygame.DOUBLEBUF | pygame.HWSURFACE)
 
 # Define colors
 black = (0, 0, 0)
@@ -18,7 +21,7 @@ white = (255, 255, 255)
 
 dot_radius = 5
 
-maximum_vertices = 20000
+maximum_vertices = 569981
 #2000 for my pc is most optimal
 
 
@@ -27,7 +30,7 @@ magnification = 1
 #unit vectors
 #i = (1, 0)
 #j = (0, 1)
-k = (0, 0.1)
+k = (0, 0)
 ni = 0
 nj = 0
 nk = 0
@@ -35,6 +38,13 @@ nk = 0
 origin_x = 0
 origin_y = 0
 origin_z = 0
+
+
+# 2. Create Font (None uses default system font; 74 is the size)
+font = pygame.font.SysFont(None, 24)
+
+# 3. Render (Text, Antialias, Color)
+# Antialias=True makes text smooth; (0, 128, 0) is RGB green
 
 
 def draw_line(x, y, z, x1, y1, z1, color = white):
@@ -48,10 +58,26 @@ def draw_coordinate_plane():
     draw_line(initial_point+100, initial_point+0, initial_point+0,initial_point, initial_point, initial_point, pygame.Color('blue'))
 
 def draw_point(x, y, z, radius = dot_radius, color = white):
-    pygame.draw.circle(screen, color, (x+z*k[0], y+z*k[1]), radius)
+    if x+z*k[0]<screen_width and y+z*k[1]<screen_height and x+z*k[0]>0 and y+z*k[1]>0:
+        gfxdraw.pixel(screen, int(x+z*k[0]), int(y+z*k[1]), color)
+
+
+
+def rotate_x(points, theta_deg):
+    theta = np.radians(theta_deg)
+    c, s = np.cos(theta), np.sin(theta)
+
+    # Define the rotation matrix for the X-axis
+    R = np.array(((1, 0, 0),
+                  (0, c, -s),
+                  (0, s, c)))
+
+    # Apply rotation (assuming points is an Nx3 array)
+    return points @ R.T
+
 
 def threeD_converter(model):
-    models = ["../Human skeleton_ascii.ply", "../Lone Sailor Memorial_ascii.ply", "../Brain_Model_no_normals.ply"]
+    models = ["../Human skeleton_ascii.ply", "../Lone Sailor Memorial_ascii.ply", "../Brain_Model_no_normals.ply", "../Knight_no_normals.ply"]
     line_count = 0
     counting_lines = False
     vertex_count = 0
@@ -63,7 +89,10 @@ def threeD_converter(model):
 
             if counting_lines and line_count <= vertex_count:
                 line_count += 1
-                if line_count % (vertex_count//maximum_vertices) == 0:
+                if vertex_count>maximum_vertices:
+                    if line_count % (vertex_count//maximum_vertices) == 0:
+                        vertext_coordinates.append([float(v) / 2 for v in line.strip().split()])
+                else:
                     vertext_coordinates.append([float(v) / 2 for v in line.strip().split()])
             if "end_header" in line.strip():
                 counting_lines = True
@@ -114,24 +143,30 @@ initial_z = 100
 
 
 counter = 0
+x_temp = 0
+y_temp = 0
+theta1 = 0
+points = threeD_converter(1)
+points = np.array(points)
+maximum_vertices_per_fps = 100
 
-points = threeD_converter(2)
+points_length = len(points)
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         
-   
+    start = time.perf_counter()
  
     
     
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP]:
-        magnification += 0.01
+        magnification += 10
     if keys[pygame.K_DOWN]:
-        magnification -= 0.01
+        magnification -= 10
     if keys[pygame.K_LEFT]:
         initial_x -= 10
     if keys[pygame.K_RIGHT]:
@@ -146,59 +181,53 @@ while running:
         points = threeD_converter(2)
     if keys[pygame.K_3]:
         points = threeD_converter(3)
+    if keys[pygame.K_4]:
+        points = threeD_converter(4)
     
     
      # Clear screen
     screen.fill(black)
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
-    theta1 = 0.01
+    
+
+
     
     mouse_x, mouse_y = pygame.mouse.get_pos()
-
+    
     draw_coordinate_plane()
-    theta1 = 0.01*mouse_x + screen_width//2
+    theta1 += 0.01
     theta2 = -0.01*mouse_y+ screen_height//2
     theta3 = 0
 
-    previous_mouse_x = 0
-    previous_mouse_y = 0
 
-    previous_points = []
+
+
     for x, y, z in points:
-        
-        counter += 0.05
+        counter+=1
+        if points_length>maximum_vertices_per_fps:
+            if counter % (points_length//maximum_vertices_per_fps) == 0:
+                
 
+                x,y,z = rotate_x((x,y,z), theta2*1000)
+            
+
+                draw_point(x, y, z, 1, white)
+        else:
+
+            x,y,z = rotate_x((x,y,z), theta2*1000)
         
-       
+
+            draw_point(x, y, z, 1, white)
+
+
+    end = time.perf_counter()
     
-        x0, y0, z0 = x, y, z
+    maximum_vertices_per_fps = 100000
 
-        x = initial_x + (x0*math.cos(theta3)*math.cos(theta1) +
-                        y0*(math.cos(theta3)*math.sin(theta1)*math.sin(theta2) - math.sin(theta3)*math.cos(theta2)) +
-                        z0*(math.cos(theta3)*math.sin(theta1)*math.cos(theta2) + math.sin(theta3)*math.sin(theta2))) * magnification
+    text_surface = font.render('FPS:'+str(1//(end-start))+",  vertices:"+str(maximum_vertices_per_fps), True, (0, 128, 0))
 
-        y = initial_y + (x0*math.sin(theta3)*math.cos(theta1) +
-                        y0*(math.sin(theta3)*math.sin(theta1)*math.sin(theta2) + math.cos(theta3)*math.cos(theta2)) +
-                        z0*(math.sin(theta3)*math.sin(theta1)*math.cos(theta2) - math.cos(theta3)*math.sin(theta2))) * magnification
-
-        z = initial_z + (x0*(-math.sin(theta1)) +
-                        y0*(math.cos(theta1)*math.sin(theta2)) +
-                        z0*(math.cos(theta1)*math.cos(theta2))) * magnification
-       
-
-
-       
-
-        draw_point(x, y, z, 1, white)
-
-        previous_points = [x, y, z]
-    previous_mouse_x = mouse_x
-    previous_mouse_y = mouse_y
-
-
-
-
+    screen.blit(text_surface, (0, screen_height-24))
 
 
 
