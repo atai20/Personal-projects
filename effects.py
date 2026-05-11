@@ -78,6 +78,7 @@ my_theta_horiz2 = 0
 mouse_x = 0
 mouse_y = 0
 magnitude = 100
+mouse_poses = []
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -87,18 +88,21 @@ while running:
    
     screen.fill(black)
 
+
     if event.type == pygame.MOUSEBUTTONDOWN:
         if event.button == 1:  # Left click
             magnitude = 100
             mouse_pos = pygame.mouse.get_pos()
             mouse_x = mouse_pos[0]
             mouse_y = mouse_pos[1]
+            mouse_poses.append((mouse_x, mouse_y, magnitude))
 
     
     theta += 1
     theta2 += 0.1
 
     magnitude /= 1.1
+    amplitudes = []
 
     for x in range(-100, 100,2):
         for y in range(-100, 100,2):
@@ -108,7 +112,11 @@ while running:
             #cool central point wave
             #cos( √ (x^2 + y^2) - 0.04 * π) / √ (x^2 + y^2)
             if (x+600-mouse_x)**2+(y+200-mouse_y)**2 != 0:
-                draw_point(600+x,y, 200+magnitude*math.cos((math.sqrt((x+600-mouse_x)**2+(y+200-mouse_y)**2)-0.04*math.pi)/5+theta)/math.sqrt((x+600-mouse_x)**2+(y+200-mouse_y)**2))
+                for pos_x, pos_y, amplitude in mouse_poses:
+                    if math.sqrt((x+600-pos_x)**2+(y+200-pos_y)**2) != 0:
+                        amplitudes.append(100)
+                        draw_point(600+x,y, 200+amplitude*math.cos((math.sqrt((x+600-pos_x)**2+(y+200-pos_y)**2)-0.04*math.pi)/5+theta)/math.sqrt((x+600-pos_x)**2+(y+200-pos_y)**2))
+                    
                 draw_point(600, 0, 200)
                 draw_point(460+x,y+60, magnitude*math.cos((math.sqrt((x+600-mouse_x)**2+(y+200-mouse_y)**2)-0.04*math.pi)/5+theta)/math.sqrt((x+600-mouse_x)**2+(y+200-mouse_y)**2)+7*math.sin(x/20+theta2)*math.cos(y/20+theta2))
                 draw_point(460, 60, 0)
